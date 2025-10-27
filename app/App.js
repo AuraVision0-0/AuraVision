@@ -6,8 +6,11 @@ import HomeScreen from "./screens/HomeScreen";
 import Login from "./screens/Login";
 import SignUp from "./screens/SignUp";
 import Main from "./screens/main";
-// import EnvironmentDescription from "./Features/EnvironmentDescription";
+import EnvironmentDescription from "./Features/EnvironmentDescription";
 import ObjectDetection from "./Features/ObjectDetection";
+import DocumentReading from "./Features/DocumentReading";
+import DistanceCalc from "./Features/DistanceCalc";
+import Direction from "./Features/Direction";
 
 const Stack = createStackNavigator();
 
@@ -20,8 +23,11 @@ export default function App() {
         <Stack.Screen name="Login" component={Login} />
         <Stack.Screen name="Signup" component={SignUp} />
         <Stack.Screen name="Main" component={Main} />
-        {/* <Stack.Screen name="EnvironmentDescription" component={EnvironmentDescription} /> */}
+        <Stack.Screen name="EnvironmentDescription" component={EnvironmentDescription} />
         <Stack.Screen name="ObjectDetection" component={ObjectDetection}/>
+        <Stack.Screen name="DocumentReading" component={DocumentReading}/>
+        <Stack.Screen name="DistanceCalc" component={DistanceCalc}/>
+        <Stack.Screen name="Direction" component={Direction}/>
       </Stack.Navigator>
     </NavigationContainer>
   );
