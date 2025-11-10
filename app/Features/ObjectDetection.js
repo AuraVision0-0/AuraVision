@@ -125,9 +125,9 @@ const styles = StyleSheet.create({
     justifyContent: "space-evenly",
   },
   button: {
-    backgroundColor: "rgba(0,0,0,0.75)",
-    padding: 12,
-    borderRadius: 10,
+    backgroundColor: "#0097b2",
+    padding: 30,
+    borderRadius:20,
   },
   backButton: { backgroundColor: "gray" },
   buttonText: { color: "#fff", fontWeight: "600" },

@@ -20,7 +20,7 @@ export default function DistanceCalc({ navigation }) {
   const [previewImage, setPreviewImage] = useState(null);
   const cameraRef = useRef(null);
 
-  const SERVER_URL = `${DIST}/dist`; // Replace with your backend IP
+  const SERVER_URL = `${DISTa}/dist`; // Replace with your backend IP
 
   const [permission, requestPermission] = useCameraPermissions();
 
@@ -126,9 +126,9 @@ const styles = StyleSheet.create({
     justifyContent: "space-evenly",
   },
   button: {
-    backgroundColor: "rgba(0,0,0,0.75)",
-    padding: 12,
-    borderRadius: 10,
+    backgroundColor: "#0097b2",
+    padding: 30,
+    borderRadius: 20,
   },
   backButton: { backgroundColor: "gray" },
   buttonText: { color: "#fff", fontWeight: "600" },

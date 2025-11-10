@@ -12,16 +12,16 @@ import {
 import { CameraView, useCameraPermissions } from "expo-camera";
 import * as Speech from "expo-speech";
 import axios from "axios";
-import {ENEV } from "../../backend/api";
+import {BUS} from "../../backend/api";
 
-export default function EnvironmentDescription({ navigation }) {
+
+export default function BusIdentifier({ navigation }) {
   const [loading, setLoading] = useState(false);
   const [previewImage, setPreviewImage] = useState(null);
   const cameraRef = useRef(null);
 
-  const SERVER_URL = `${ENEV}/enev`;
+  const SERVER_URL = `${BUS}/bus`; // Replace with your backend IP
 
-  // Request camera permission
   const [permission, requestPermission] = useCameraPermissions();
 
   if (!permission) {
@@ -56,23 +56,24 @@ export default function EnvironmentDescription({ navigation }) {
 
       // Take picture with base64
       const photo = await cameraRef.current.takePictureAsync({ base64: true, quality: 0.5 });
-      if (!photo?.base64) throw new Error("Failed to capture base64 image");
+      if (!photo?.base64) throw new Error("Failed to capture image");
 
       const response = await axios.post(SERVER_URL, { imageBase64: photo.base64 }, { timeout: 20000 });
-      const { objects, preview } = response.data || {};
+      const { description, preview } = response.data || {};
 
-      if (!objects || objects.length === 0) {
+      if (!description || description.length === 0) {
         Speech.stop();
         Speech.speak("No objects detected.");
         Alert.alert("Result", "No objects detected.");
       } else {
-        const detected = objects.map((o) => o.label).join(", ");
+        // Speak the description returned by backend
         Speech.stop();
-        Speech.speak(`I see ${detected}`);
-        Alert.alert("Detected Objects", detected);
+        Speech.speak(description);
+        Alert.alert("Detected Objects", description);
       }
 
       if (preview) setPreviewImage(`data:image/jpeg;base64,${preview}`);
+
     } catch (err) {
       console.error("captureAndDetect error:", err);
       Alert.alert(
@@ -97,7 +98,7 @@ export default function EnvironmentDescription({ navigation }) {
               <Text style={styles.buttonText}>Capture & Detect</Text>
             </TouchableOpacity>
 
-            <TouchableOpacity style={[styles.button, styles.backButton]} onPress={() => navigation?.goBack?.()}>
+            <TouchableOpacity style={[styles.button, styles.backButton]} onPress={() => navigation.goBack()}>
               <Text style={styles.buttonText}>Back</Text>
             </TouchableOpacity>
           </>

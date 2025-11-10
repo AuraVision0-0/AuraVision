@@ -41,7 +41,7 @@ export default function Main({ navigation }) {
       </View>
 
       {/* Bottom Voice Assist Button */}
-      <TouchableOpacity style={styles.voiceButton} onPress={() => alert("Voice Assist Activated")}>
+      <TouchableOpacity style={styles.voiceButton} onPress={() =>navigation.navigate("VoiceAssistant")}>
         <Text style={styles.voiceButtonText}>VOICE ASSIST</Text>
       </TouchableOpacity>
     </View>
