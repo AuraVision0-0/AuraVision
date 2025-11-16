@@ -50,4 +50,8 @@ const styles = StyleSheet.create({
     marginBottom: 20,
     fontSize: 16,
   },
+<<<<<<< HEAD
 });
+=======
+});
+>>>>>>> 31ac6df (Commit 5)

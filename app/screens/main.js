@@ -39,10 +39,14 @@ export default function Main({ navigation }) {
           <Text style={styles.cardText}>Bus Identifier</Text>
         </TouchableOpacity>
       </View>
+      {/* AI Bot Button */}
+      <TouchableOpacity style={styles.voiceButton} onPress={() => navigation.navigate("AIBot")}>
+        <Text style={styles.voiceButtonText}>AI BOT</Text>
+      </TouchableOpacity>
 
       {/* Bottom Voice Assist Button */}
       <TouchableOpacity style={styles.voiceButton} onPress={() =>navigation.navigate("VoiceAssistant")}>
-        <Text style={styles.voiceButtonText}>VOICE ASSIST</Text>
+        <Text style={styles.voiceButtonText}>VOICE ASSISTANT</Text>
       </TouchableOpacity>
     </View>
   );

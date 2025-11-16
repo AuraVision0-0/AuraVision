@@ -1,55 +1,93 @@
 from flask import Flask, request, jsonify
 from flask_cors import CORS
+import base64
+import io
+import os
 from PIL import Image
-import io, base64, easyocr, traceback, numpy as np
+import google.generativeai as genai
+from dotenv import load_dotenv
+import traceback
 
+# ----------------------------------------------------------
+# 1️⃣ Load environment variables (.env file)
+# ----------------------------------------------------------
+load_dotenv()
+GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
+
+if not GEMINI_API_KEY:
+    raise ValueError("❌ Missing GEMINI_API_KEY in .env file")
+
+# ----------------------------------------------------------
+# 2️⃣ Initialize Flask app and Gemini API
+# ----------------------------------------------------------
 app = Flask(__name__)
 CORS(app)
+genai.configure(api_key=GEMINI_API_KEY)
 
-reader = easyocr.Reader(['en'], gpu=False)
+# ✅ Use latest model name (as of Nov 2025)
+model = genai.GenerativeModel("gemini-2.0-flash")
 
-def decode_image(image_base64):
-    """Decode base64 string to PIL Image."""
-    try:
-        image_data = base64.b64decode(image_base64)
-        image = Image.open(io.BytesIO(image_data)).convert("RGB")
-        return image
-    except Exception as e:
-        print("❌ Image decoding failed:", e)
-        raise
-
+# ----------------------------------------------------------
+# 3️⃣ Define endpoint for text extraction
+# ----------------------------------------------------------
 @app.route("/text", methods=["POST"])
-def read_text():
+def extract_text_from_image():
     try:
-        print("📥 Received POST /text")
-
         data = request.get_json()
-        image_base64 = data.get("imageBase64")
-        if not image_base64:
-            return jsonify({"error": "No imageBase64 provided"}), 400
+        if not data or "imageBase64" not in data:
+            return jsonify({"error": "Missing imageBase64 in request"}), 400
 
-        # Decode to PIL and convert to numpy array for EasyOCR
-        image = decode_image(image_base64)
-        image_np = np.array(image)
-        print("🖼️ Image decoded and converted to NumPy")
+        # Decode base64
+        image_b64 = data["imageBase64"]
+        image_bytes = base64.b64decode(image_b64)
 
-        # Run OCR
-        result = reader.readtext(image_np)
-        print("🔍 OCR raw result:", result)
+        print(f"📸 Received image, size: {len(image_bytes)} bytes")
 
-        if not result:
-            return jsonify({"objects": [{"label": "No readable text detected."}]}), 200
+        # Try to open image
+        try:
+            image = Image.open(io.BytesIO(image_bytes))
+        except Exception as img_err:
+            print("❌ PIL failed to open image:", img_err)
+            raise ValueError("Invalid image data received. Check base64 encoding.")
 
-        combined_text = " ".join([item[1] for item in result])
-        print("📝 Combined Text:", combined_text)
+        # OCR prompt
+        prompt = (
+            "Extract all readable printed or handwritten text from this image. "
+            "Return only the recognized text clearly, no descriptions."
+        )
 
-        return jsonify({"objects": [{"label": combined_text}]}), 200
+        # Send to Gemini
+        print("🧠 Sending request to Gemini model...")
+        response = model.generate_content(
+            [prompt, {"mime_type": "image/jpeg", "data": image_bytes}]
+        )
+
+        # Extract text
+        text_result = getattr(response, "text", "").strip() if response else ""
+        if not text_result:
+            text_result = "No readable text detected."
+
+        # Create preview
+        preview_io = io.BytesIO()
+        image.thumbnail((400, 400))
+        image.save(preview_io, format="JPEG")
+        preview_b64 = base64.b64encode(preview_io.getvalue()).decode("utf-8")
+
+        print(f"✅ Extracted text (first 100 chars): {text_result[:100]}")
+
+        return jsonify({
+            "objects": [{"label": text_result}],
+            "preview": preview_b64
+        })
 
     except Exception as e:
-        print("❌ Error:", e)
-        traceback.print_exc()
+        print("❌ Error processing image:", str(e))
+        print(traceback.format_exc())  # show full error details
         return jsonify({"error": str(e)}), 500
 
+
+# ----------------------------------------------------------
+# 4️⃣ Run Flask app
+# ----------------------------------------------------------
 if __name__ == "__main__":
-    print("✅ OCR server running on http://0.0.0.0:5001/text")
     app.run(host="0.0.0.0", port=5001, debug=True)

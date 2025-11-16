@@ -7,3 +7,4 @@ export const TEXT= `${BASE_IP}:5001`;
 export const ENEV = `${BASE_IP}:5002`;
 export const DIST = `${BASE_IP}:5003`;
 export const BUS = `${BASE_IP}:5004`;
+export const AIBOT=`${BASE_IP}:5005`;

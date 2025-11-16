@@ -7,8 +7,8 @@ export default function VoiceAssistant({ navigation }) {
   const isSpeaking = useRef(false);
 
   const message = `
-  Welcome to the Aural Vision interface.
-  On the top left corner, you will find the Aural Vision logo.
+  Welcome to the Aura Vision interface.
+  On the top left corner, you will find the Aura Vision logo.
   Below that, there are six main features arranged in two columns.
   The first button on the top left is Object Detection.
   When pressed, you can take a picture and the app will identify the object for you.

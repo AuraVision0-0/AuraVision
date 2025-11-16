@@ -20,7 +20,7 @@ export default function DistanceCalc({ navigation }) {
   const [previewImage, setPreviewImage] = useState(null);
   const cameraRef = useRef(null);
 
-  const SERVER_URL = `${DISTa}/dist`; // Replace with your backend IP
+  const SERVER_URL = `${DIST}/dist`; // Replace with your backend IP
 
   const [permission, requestPermission] = useCameraPermissions();
 

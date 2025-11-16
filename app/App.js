@@ -13,6 +13,7 @@ import DistanceCalc from "./Features/DistanceCalc";
 import Direction from "./Features/Direction";
 import VoiceAssistant from "./Features/VoiceAssistant";
 import BusIdentifier from "./Features/BusIdentifier";
+import AIBot from "./Features/AIBot";
 
 const Stack = createStackNavigator();
 
@@ -30,8 +31,10 @@ export default function App() {
         <Stack.Screen name="DocumentReading" component={DocumentReading}/>
         <Stack.Screen name="DistanceCalc" component={DistanceCalc}/>
         <Stack.Screen name="Direction" component={Direction}/>
-        <Stack.Screen name="VoiceAssistant" component={VoiceAssistant}/>
         <Stack.Screen name="BusIdentifier" component={BusIdentifier}/>
+        <Stack.Screen name="AIBot" component={AIBot}/>
+        <Stack.Screen name="VoiceAssistant" component={VoiceAssistant}/>
+        
 
       </Stack.Navigator>
     </NavigationContainer>
