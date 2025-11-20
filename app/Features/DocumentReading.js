@@ -13,15 +13,24 @@ import { CameraView, useCameraPermissions } from "expo-camera";
 import * as Speech from "expo-speech";
 import axios from "axios";
 import { TEXT } from "../../backend/api";
+import { useFocusEffect } from "@react-navigation/native";
 
 export default function DocumentReading({ navigation }) {
   const [loading, setLoading] = useState(false);
   const [previewImage, setPreviewImage] = useState(null);
   const cameraRef = useRef(null);
 
-  const SERVER_URL =`${TEXT}/text`;
+  const SERVER_URL = `${TEXT}/text`;
 
-  // Request camera permission
+  // Stop speech when user leaves the screen (hardware back / gesture)
+  useFocusEffect(
+    React.useCallback(() => {
+      return () => {
+        Speech.stop();
+      };
+    }, [])
+  );
+
   const [permission, requestPermission] = useCameraPermissions();
 
   if (!permission) {
@@ -54,22 +63,30 @@ export default function DocumentReading({ navigation }) {
       setLoading(true);
       setPreviewImage(null);
 
-      // Take picture with base64
-      const photo = await cameraRef.current.takePictureAsync({ base64: true, quality: 0.5 });
+      const photo = await cameraRef.current.takePictureAsync({
+        base64: true,
+        quality: 0.5,
+      });
+
       if (!photo?.base64) throw new Error("Failed to capture base64 image");
 
-      const response = await axios.post(SERVER_URL, { imageBase64: photo.base64 }, { timeout: 20000 });
+      const response = await axios.post(
+        SERVER_URL,
+        { imageBase64: photo.base64 },
+        { timeout: 20000 }
+      );
+
       const { objects, preview } = response.data || {};
 
       if (!objects || objects.length === 0) {
         Speech.stop();
-        Speech.speak("No objects detected.");
-        Alert.alert("Result", "No objects detected.");
+        Speech.speak("No text detected.");
+        Alert.alert("Result", "No text detected.");
       } else {
-        const detected = objects.map((o) => o.label).join(", ");
+        const detected = objects.map((o) => o.label).join(" ");
         Speech.stop();
-        Speech.speak(`I see ${detected}`);
-        Alert.alert("Detected Objects", detected);
+        Speech.speak(detected);
+        Alert.alert("Detected Text", detected);
       }
 
       if (preview) setPreviewImage(`data:image/jpeg;base64,${preview}`);
@@ -92,15 +109,9 @@ export default function DocumentReading({ navigation }) {
         {loading ? (
           <ActivityIndicator size="large" color="#fff" />
         ) : (
-          <>
-            <TouchableOpacity style={styles.button} onPress={captureAndDetect}>
-              <Text style={styles.buttonText}>Capture & Detect</Text>
-            </TouchableOpacity>
-
-            <TouchableOpacity style={[styles.button, styles.backButton]} onPress={() => navigation?.goBack?.()}>
-              <Text style={styles.buttonText}>Back</Text>
-            </TouchableOpacity>
-          </>
+          <TouchableOpacity style={styles.button} onPress={captureAndDetect}>
+            <Text style={styles.buttonText}>Capture & Detect</Text>
+          </TouchableOpacity>
         )}
       </View>
 
@@ -122,14 +133,13 @@ const styles = StyleSheet.create({
     bottom: 28,
     width: "100%",
     flexDirection: "row",
-    justifyContent: "space-evenly",
+    justifyContent: "center",
   },
   button: {
     backgroundColor: "#0097b2",
     padding: 30,
     borderRadius: 20,
   },
-  backButton: { backgroundColor: "gray" },
   buttonText: { color: "#fff", fontWeight: "600" },
   center: { flex: 1, justifyContent: "center", alignItems: "center", padding: 20 },
   previewContainer: {

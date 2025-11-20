@@ -12,7 +12,8 @@ import {
 import { CameraView, useCameraPermissions } from "expo-camera";
 import * as Speech from "expo-speech";
 import axios from "axios";
-import {ENEV } from "../../backend/api";
+import { ENEV } from "../../backend/api";
+import { useFocusEffect } from "@react-navigation/native";
 
 export default function EnvironmentDescription({ navigation }) {
   const [loading, setLoading] = useState(false);
@@ -20,6 +21,15 @@ export default function EnvironmentDescription({ navigation }) {
   const cameraRef = useRef(null);
 
   const SERVER_URL = `${ENEV}/enev`;
+
+  // Stop speech when user leaves the screen (hardware back / gesture / navigation)
+  useFocusEffect(
+    React.useCallback(() => {
+      return () => {
+        Speech.stop();
+      };
+    }, [])
+  );
 
   // Request camera permission
   const [permission, requestPermission] = useCameraPermissions();
@@ -92,15 +102,9 @@ export default function EnvironmentDescription({ navigation }) {
         {loading ? (
           <ActivityIndicator size="large" color="#fff" />
         ) : (
-          <>
-            <TouchableOpacity style={styles.button} onPress={captureAndDetect}>
-              <Text style={styles.buttonText}>Capture & Detect</Text>
-            </TouchableOpacity>
-
-            <TouchableOpacity style={[styles.button, styles.backButton]} onPress={() => navigation?.goBack?.()}>
-              <Text style={styles.buttonText}>Back</Text>
-            </TouchableOpacity>
-          </>
+          <TouchableOpacity style={styles.button} onPress={captureAndDetect}>
+            <Text style={styles.buttonText}>Capture & Detect</Text>
+          </TouchableOpacity>
         )}
       </View>
 
@@ -122,14 +126,13 @@ const styles = StyleSheet.create({
     bottom: 28,
     width: "100%",
     flexDirection: "row",
-    justifyContent: "space-evenly",
+    justifyContent: "center",
   },
   button: {
     backgroundColor: "#0097b2",
     padding: 30,
     borderRadius: 20,
   },
-  backButton: { backgroundColor: "gray" },
   buttonText: { color: "#fff", fontWeight: "600" },
   center: { flex: 1, justifyContent: "center", alignItems: "center", padding: 20 },
   previewContainer: {

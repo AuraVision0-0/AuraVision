@@ -10,7 +10,8 @@ import {
   StyleSheet,
 } from "react-native";
 import * as Speech from "expo-speech";
-import {AIBOT} from "../../backend/api";
+import { AIBOT } from "../../backend/api";
+import { useFocusEffect } from "@react-navigation/native";
 
 export default function AIBot() {
   const [messages, setMessages] = useState([
@@ -20,6 +21,27 @@ export default function AIBot() {
   const [loading, setLoading] = useState(false);
 
   const scrollRef = useRef();
+
+  // Stop speech when screen loses focus (hardware back / gesture / navigation)
+  useFocusEffect(
+    React.useCallback(() => {
+      return () => {
+        try {
+          Speech.stop();
+        } catch (e) {
+          console.log("Speech stop error:", e);
+        }
+      };
+    }, [])
+  );
+
+  const stopSpeech = () => {
+    try {
+      Speech.stop();
+    } catch (e) {
+      console.log("Speech stop error:", e);
+    }
+  };
 
   const sendMessage = async () => {
     if (!input.trim()) return;
@@ -41,15 +63,17 @@ export default function AIBot() {
 
       setMessages((prev) => [...prev, { sender: "bot", text: reply }]);
 
+      // ensure any prior speech is stopped before speaking new reply
+      stopSpeech();
       Speech.speak(reply, { rate: 0.95, pitch: 1 });
     } catch (err) {
       setMessages((prev) => [
         ...prev,
         { sender: "bot", text: "⚠️ Unable to reach server." },
       ]);
+    } finally {
+      setLoading(false);
     }
-
-    setLoading(false);
   };
 
   return (
@@ -89,6 +113,11 @@ export default function AIBot() {
           style={styles.input}
           placeholderTextColor="#888"
         />
+
+        {/* Stop button (left of Send) */}
+        <TouchableOpacity style={styles.stopBtn} onPress={stopSpeech}>
+          <Text style={styles.stopText}>Stop</Text>
+        </TouchableOpacity>
 
         <TouchableOpacity style={styles.sendBtn} onPress={sendMessage}>
           <Text style={styles.sendText}>{loading ? "..." : "Send"}</Text>
@@ -138,6 +167,7 @@ const styles = StyleSheet.create({
     backgroundColor: "#fff",
     borderTopWidth: 1,
     borderColor: "#ccc",
+    alignItems: "center",
   },
 
   input: {
@@ -148,12 +178,23 @@ const styles = StyleSheet.create({
     fontSize: 16,
   },
 
-  sendBtn: {
-    marginLeft: 10,
-    backgroundColor: "#0097B2",
-    paddingHorizontal: 20,
+  stopBtn: {
+    marginLeft: 8,
+    backgroundColor: "rgba(255, 107, 107, 1)",
+    paddingHorizontal: 16,
+    paddingVertical: 10,
     justifyContent: "center",
-    borderRadius: 10,
+    borderRadius: 8,
+  },
+  stopText: { color: "#fff", fontSize: 16, fontWeight: "600" },
+
+  sendBtn: {
+    marginLeft: 8,
+    backgroundColor: "#0097B2",
+    paddingHorizontal: 16,
+    paddingVertical: 10,
+    justifyContent: "center",
+    borderRadius: 8,
   },
   sendText: { color: "#fff", fontSize: 16, fontWeight: "bold" },
 });
